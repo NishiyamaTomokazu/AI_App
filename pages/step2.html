@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LED Control App - STEP2</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="iframe-body">
+
+<div class="top-controls step2">
+    <button class="connect-btn" id="connect-btn">🪄 AI クロックに接続</button>
+    <span class="connect-hint" id="connect-hint">← まずはここを押そう！</span>
+</div>
+
+<div class="app-container step2">
+    <div class="panel-header">
+        <h2>⚔️ 魔法使いの試験</h2>
+        <p>指定された色を3秒以内に作れるかな？</p>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="left-panel">
+            <div class="led-container"><div class="led" id="led-image"></div></div>
+            <div class="controls">
+                <div class="color-col">
+                    <span class="color-label">🔴 赤</span>
+                    <button class="btn on-btn" id="red-on" ontouchstart="turnOn(1); event.preventDefault();">ON</button>
+                    <button class="btn off-btn" id="red-off" ontouchstart="turnOff(1); event.preventDefault();">OFF</button>
+                </div>
+                <div class="color-col">
+                    <span class="color-label">🟢 緑</span>
+                    <button class="btn on-btn" id="green-on" ontouchstart="turnOn(2); event.preventDefault();">ON</button>
+                    <button class="btn off-btn" id="green-off" ontouchstart="turnOff(2); event.preventDefault();">OFF</button>
+                </div>
+                <div class="color-col">
+                    <span class="color-label">🔵 青</span>
+                    <button class="btn on-btn" id="blue-on" ontouchstart="turnOn(4); event.preventDefault();">ON</button>
+                    <button class="btn off-btn" id="blue-off" ontouchstart="turnOff(4); event.preventDefault();">OFF</button>
+                </div>
+            </div>
+            <div class="end-container"><button class="btn" id="end-btn" ontouchstart="endApp(); event.preventDefault();">リセット</button></div>
+            <!-- 「現在の変数(appState)」の表示は削除。接続状態のみ表示 -->
+            <div class="state-display">
+                [ <span id="device-status">未接続</span> ]
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="game-header">⏱️ 3秒チャレンジ！</div>
+            <button class="start-btn" id="start-game-btn" ontouchstart="startGame(); event.preventDefault();">▶ スタート</button>
+            <div style="text-align: center; width: 100%;">
+                <div class="question-num" id="question-num" style="display: none;"></div>
+                <div class="game-message" id="game-message">
+                    ボタンを押して開始
+                </div>
+
+                <div id="clear-container" style="display: none; margin-top: 20px;">
+                    <div style="font-size: 20px; font-weight: bold; color: #764ba2; margin-bottom: 15px; animation: bounce 1s infinite alternate;">✨ STEP3の扉が開かれた！ ✨</div>
+                    <button class="btn" style="width: auto; padding: 10px 30px; background: #667eea; color: white; border: none; border-radius: 50px;" onclick="goToStep3()">STEP3へ進む 🚪</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/step2.js"></script>
+</body>
+</html>
