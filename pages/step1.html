@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LED Control App - STEP1</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="iframe-body">
+
+<div class="top-controls step1">
+    <button class="connect-btn" id="connect-btn">🪄 AI クロックに接続</button>
+    <span class="connect-hint" id="connect-hint">← まずはここを押そう！</span>
+</div>
+
+<div class="app-container step1">
+    <div class="panel-header">
+        <h2>🧪 魔法の調合ラボ</h2>
+        <p>光の三原色を混ぜて、新しい色を作り出そう！</p>
+    </div>
+
+    <div class="step1-inner">
+        <div class="led-container">
+            <div class="led" id="led-image"></div>
+        </div>
+        <div class="controls">
+            <div class="color-col">
+                <span class="color-label">🔴 赤</span>
+                <button class="btn on-btn" id="red-on" ontouchstart="turnOn(1); event.preventDefault();">ON</button>
+                <button class="btn off-btn" id="red-off" ontouchstart="turnOff(1); event.preventDefault();">OFF</button>
+            </div>
+            <div class="color-col">
+                <span class="color-label">🟢 緑</span>
+                <button class="btn on-btn" id="green-on" ontouchstart="turnOn(2); event.preventDefault();">ON</button>
+                <button class="btn off-btn" id="green-off" ontouchstart="turnOff(2); event.preventDefault();">OFF</button>
+            </div>
+            <div class="color-col">
+                <span class="color-label">🔵 青</span>
+                <button class="btn on-btn" id="blue-on" ontouchstart="turnOn(4); event.preventDefault();">ON</button>
+                <button class="btn off-btn" id="blue-off" ontouchstart="turnOff(4); event.preventDefault();">OFF</button>
+            </div>
+        </div>
+        <div class="end-container">
+            <button class="btn" id="end-btn" ontouchstart="endApp(); event.preventDefault();">リセット</button>
+        </div>
+        <div class="state-display">
+            [ <span id="device-status">未接続</span> ]
+        </div>
+
+        <!-- 現在の変数(appState)の表示は削除。代わりにSTEP2への案内リンク -->
+        <p class="outro-text" style="cursor: pointer; font-weight: bold; color: #007bff;" onclick="goToStep2()">
+            準備ができたら STEP2 へ進もう 👉
+        </p>
+    </div>
+</div>
+
+<script src="../js/step1.js"></script>
+</body>
+</html>
