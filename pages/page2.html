@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAGE2 受信モニタ</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="iframe-body">
+<h1>受信モニタ</h1>
+
+<div class="card">
+  <h2>マイコンから届いたバイト (FSK)</h2>
+  <div class="row">
+    <span>状態: <span class="status off" id="status">未接続</span></span>
+    <span>受信数: <b id="count">0</b></span>
+    <span>フレームエラー: <b id="errors">0</b></span>
+    <button class="btn sub" id="clear-btn">クリア</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <p class="hint">接続は PAGE1 で行います。10進数 (16進数) で表示します。</p>
+</div>
+
+<script>
+const comm = window.parent.comm;
+const $ = (id) => document.getElementById(id);
+let count = 0;
+
+function renderStatus() {
+  $('status').textContent = comm.connected ? '接続中' : '未接続 (PAGE1で接続)';
+  $('status').className = 'status ' + (comm.connected ? 'on' : 'off');
+}
+window.addEventListener('comm-status', renderStatus);
+renderStatus();
+
+// 親ページが受信したバイトを、ここへイベントで届けてくれる
+window.addEventListener('comm-byte', (e) => {
+  const v = e.detail.value;
+  const chip = document.createElement('span');
+  chip.className = 'chip';
+  chip.textContent = `${v} (0x${v.toString(16).toUpperCase().padStart(2, '0')})`;
+  $('chips').appendChild(chip);
+  $('count').textContent = ++count;
+});
+window.addEventListener('comm-frame-error', (e) => { $('errors').textContent = e.detail.count; });
+
+$('clear-btn').addEventListener('click', () => {
+  $('chips').textContent = '';
+  count = 0;
+  $('count').textContent = 0;
+});
+</script>
+</body>
+</html>

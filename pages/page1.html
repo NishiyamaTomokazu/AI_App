@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAGE1 接続・送信</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="iframe-body">
+<h1>接続・送信</h1>
+
+<div class="card">
+  <h2>① マイコンと接続 (音声通信)</h2>
+  <div class="row">
+    <button class="btn" id="connect-btn">接続する</button>
+    <button class="btn sub" id="disconnect-btn">切断</button>
+    <span>状態: <span class="status off" id="status">未接続</span></span>
+  </div>
+  <p class="hint">マイクの使用を許可してください。いちど接続すると、他のタブに移っても接続は保たれます。</p>
+</div>
+
+<div class="card">
+  <h2>② バイトデータを送信 (1バイトずつ)</h2>
+  <div class="row">
+    <input type="text" id="bytes-input" value="248, 240, 1" inputmode="text" autocomplete="off" aria-label="送信するバイト列">
+    <button class="btn" id="send-btn">送信</button>
+  </div>
+  <p class="hint">0〜255 の数をカンマか空白で区切って入力します (例: 240, 230, 2)。1バイトごとに間隔をあけて音声で送ります。</p>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+const comm = window.parent.comm;
+const $ = (id) => document.getElementById(id);
+
+function log(msg) {
+  const el = $('log');
+  el.textContent += msg + '\n';
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderStatus() {
+  const on = comm.connected;
+  $('status').textContent = on ? `接続中 (${comm.productName})` : '未接続';
+  $('status').className = 'status ' + (on ? 'on' : 'off');
+  $('send-btn').disabled = !on;
+  $('disconnect-btn').disabled = !on;
+}
+window.addEventListener('comm-status', renderStatus);
+renderStatus();
+
+// クリックの中で、await より前に comm.connect() を呼ぶこと (iPad Safari の制約)
+$('connect-btn').addEventListener('click', async () => {
+  const ok = await comm.connect();
+  if (!ok) alert('マイクを使えませんでした。\nマイクの使用を許可してから、もう一度お試しください。');
+  renderStatus();
+});
+
+$('disconnect-btn').addEventListener('click', () => comm.disconnect());
+
+function parseBytes(text) {
+  const parts = text.split(/[\s,、]+/).filter(Boolean);
+  const bytes = parts.map(Number);
+  if (!bytes.length || !bytes.every((b) => Number.isInteger(b) && b >= 0 && b <= 255)) return null;
+  return bytes;
+}
+
+$('send-btn').addEventListener('click', async () => {
+  const bytes = parseBytes($('bytes-input').value);
+  if (!bytes) { alert('0〜255 の整数を、カンマか空白で区切って入力してください。'); return; }
+
+  $('send-btn').disabled = true;
+  log(`送信開始: [${bytes.join(', ')}]`);
+  try {
+    const ok = await comm.sendBytes(bytes, {
+      onProgress: (i, value, total) => log(`  (${i + 1}/${total}) ${value}`)
+    });
+    log(ok ? '送信完了' : '送信できませんでした (未接続)');
+  } catch (e) {
+    log('エラー: ' + e.message);
+  } finally {
+    renderStatus();
+  }
+});
+</script>
+</body>
+</html>

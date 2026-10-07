@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAGE3 新しいページ</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="iframe-body">
+<h1>新しいページ (ひな形)</h1>
+
+<div class="card">
+  <p>ここに新しい教材ページを作ります。通信は次の3つだけ覚えれば使えます。</p>
+  <div class="log" style="height:auto; color:#e5e7eb">const comm = window.parent.comm;
+
+// マイコンへ1バイトずつ送信 (送り終わるまで待てる)
+await comm.sendBytes([240, 230, 2]);
+
+// マイコンから届いたバイトを受け取る
+window.addEventListener('comm-byte', (e) =&gt; console.log(e.detail.value));</div>
+  <p class="hint">接続ボタンは PAGE1 にあります。ページを増やすには index.html の PAGES に1行足します。</p>
+</div>
+</body>
+</html>

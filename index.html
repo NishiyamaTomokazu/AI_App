@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>New App</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="main-body">
+    <!-- 上部のタブ。ボタンは下の PAGES から自動で作られます -->
+    <nav class="tabs" id="tabs"></nav>
+    <iframe id="content-frame" title="content" allow="microphone"></iframe>
+
+    <script type="module">
+        import { comm } from './js/comm.js';
+        window.comm = comm;     // 各ページから window.parent.comm で使う
+
+        // ==========================================
+        // タブの一覧。ページを増やすときはここに1行足すだけ
+        // ==========================================
+        const PAGES = [
+            { url: './pages/step0.html',       label: 'STEP0', sub: '導入' },
+            // ↓ 動作確認用 (通信テスト)。不要になったら削除してOK
+            { url: 'pages/page1.html', label: 'PAGE1', sub: '接続・送信' },
+            { url: 'pages/page2.html', label: 'PAGE2', sub: '受信モニタ' },
+            { url: 'pages/page3.html', label: 'PAGE3', sub: '新しいページ' },
+        ];
+
+        const tabsEl = document.getElementById('tabs');
+        const frame = document.getElementById('content-frame');
+        const buttons = PAGES.map((p, i) => {
+            const b = document.createElement('button');
+            b.className = 'tab-btn';
+            b.innerHTML = `${p.label}<br>${p.sub}`;
+            b.addEventListener('click', () => showPage(i));
+            tabsEl.appendChild(b);
+            return b;
+        });
+
+        function showPage(i) {
+            buttons.forEach((b, k) => b.classList.toggle('active', k === i));
+            frame.src = PAGES[i].url;
+            history.replaceState(null, '', '#' + i);   // 再読み込みしても同じタブに戻る
+        }
+
+        // ページ側から他のタブへ移動したいとき: window.parent.showPage(1)
+        window.showPage = showPage;
+
+        // ==========================================
+        // 受信データ・状態を、表示中のページへ通知する
+        // ==========================================
+        function forward(type, detail) {
+            const w = frame.contentWindow;
+            if (!w) return;
+            try { w.dispatchEvent(new w.CustomEvent(type, { detail })); } catch (e) { /* ページ読み込み中 */ }
+        }
+        comm.addEventListener('byte',       (e) => forward('comm-byte', e.detail));
+        comm.addEventListener('frameError', (e) => forward('comm-frame-error', e.detail));
+        comm.addEventListener('status',     (e) => forward('comm-status', e.detail));
+
+        const start = parseInt(location.hash.slice(1), 10);
+        showPage(Number.isInteger(start) && PAGES[start] ? start : 0);
+    </script>
+</body>
+</html>
