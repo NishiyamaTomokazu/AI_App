@@ -77,6 +77,7 @@
         comm.addEventListener('byte',       (e) => forward('comm-byte', e.detail));
         comm.addEventListener('frameError', (e) => forward('comm-frame-error', e.detail));
         comm.addEventListener('status',     (e) => forward('comm-status', e.detail));
+        comm.addEventListener('tone',       (e) => forward('comm-tone', e.detail));
 
         // 常にSTEP0(先頭のタブ)から開く
         showPage(0);
