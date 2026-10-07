@@ -59,8 +59,9 @@
         comm.addEventListener('frameError', (e) => forward('comm-frame-error', e.detail));
         comm.addEventListener('status',     (e) => forward('comm-status', e.detail));
 
-        const start = parseInt(location.hash.slice(1), 10);
-        showPage(Number.isInteger(start) && PAGES[start] ? start : 0);
+        //const start = parseInt(location.hash.slice(1), 10);
+        //showPage(Number.isInteger(start) && PAGES[start] ? start : 0);
+        showPage(0);
     </script>
 </body>
 </html>
