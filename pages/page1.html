@@ -20,7 +20,22 @@
 </div>
 
 <div class="card">
-  <h2>② バイトデータを送信 (1バイトずつ)</h2>
+  <h2>③ 受信トーンのデバッグ表示 (約50msごと)</h2>
+  <div class="row">
+    <button class="btn sub" id="tone-toggle">表示を開始</button>
+    <span>状態: <span id="tone-state">-</span></span>
+    <span>レベル: <span id="tone-level">-</span></span>
+    <span>閾値: <span id="tone-threshold">-</span></span>
+  </div>
+  <p class="hint">
+    状態: <b>無音</b>=信号なし / <b>0 (1200Hz)</b>=スタートビット・データ0 / <b>1 (2200Hz)</b>=アイドル・データ1。
+    マイコンが無音のときに「無音」のままで、レベルが閾値を大きく下回っていれば、無音として正しく扱われています。
+  </p>
+  <div class="log" id="tone-log"></div>
+</div>
+
+<div class="card">
+  <h2>④ バイトデータを送信 (1バイトずつ)</h2>
   <div class="row">
     <input type="text" id="bytes-input" value="248, 240, 1" inputmode="text" autocomplete="off" aria-label="送信するバイト列">
     <button class="btn" id="send-btn">送信</button>
@@ -57,6 +72,44 @@ $('connect-btn').addEventListener('click', async () => {
 });
 
 $('disconnect-btn').addEventListener('click', () => comm.disconnect());
+
+// --- ③ 受信トーンのデバッグ表示 ---
+let toneShowing = false;
+let toneLogCount = 0;
+
+function toneLabel(tone) {
+  if (tone === 1) return '1 (2200Hz)';
+  if (tone === 0) return '0 (1200Hz)';
+  return '無音';
+}
+
+window.addEventListener('comm-tone', (e) => {
+  if (!toneShowing) return;
+  const { tone, level, threshold } = e.detail;
+
+  $('tone-state').textContent = toneLabel(tone);
+  $('tone-level').textContent = level.toFixed(4);
+  $('tone-threshold').textContent = threshold.toFixed(4);
+  $('tone-level').style.color = level < threshold ? '#0a8f6a' : '#d33';
+
+  // ログは増えすぎないよう、直近100行だけ残す
+  toneLogCount++;
+  const el = $('tone-log');
+  el.textContent += `${toneLogCount}: ${toneLabel(tone)}  level=${level.toFixed(4)} (閾値 ${threshold.toFixed(4)})\n`;
+  const lines = el.textContent.split('\n');
+  if (lines.length > 101) el.textContent = lines.slice(-101).join('\n');
+  el.scrollTop = el.scrollHeight;
+});
+
+$('tone-toggle').addEventListener('click', () => {
+  toneShowing = !toneShowing;
+  $('tone-toggle').textContent = toneShowing ? '表示を停止' : '表示を開始';
+  if (!toneShowing) {
+    $('tone-state').textContent = '-';
+    $('tone-level').textContent = '-';
+    $('tone-threshold').textContent = '-';
+  }
+});
 
 function parseBytes(text) {
   const parts = text.split(/[\s,、]+/).filter(Boolean);
