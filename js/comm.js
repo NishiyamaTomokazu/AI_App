@@ -163,6 +163,7 @@ class Comm extends EventTarget {
         ...CONFIG.rx,
         onByte: (value) => this._emit('byte', { value }),
         onFrameError: (count) => this._emit('frameError', { count }),
+        onTone: (tone, level) => this._emit('tone', { tone, level, threshold: CONFIG.rx.threshold }),
       });
       try {
         await rx.start();
