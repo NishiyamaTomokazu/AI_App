@@ -212,6 +212,7 @@ class Comm extends EventTarget {
     }
     console.log('◆ 送信データ (元データ):', data, `→ ${packets.length}パケット`);
     packets.forEach((p, i) => console.log(`  パケット${i + 1}/${packets.length} (19バイト):`, p));
+    console.log(`【iPad送信】全${packets.length}個のパケットを音声で送信します`, packets);
     const job = this._txChain.then(() => this._play(packets, opts));
     this._txChain = job.catch(() => {});
     return job;
