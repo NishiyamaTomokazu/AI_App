@@ -23,8 +23,15 @@
             { url: 'pages/step1.html', label: 'STEP1', sub: '光を作ろう' },
             { url: 'pages/step2.html', label: 'STEP2', sub: '腕試し' },
             // STEP2をクリア(または3回失敗)するまでは隠しておくタブ。id指定で後から表示する。
-            // ★中身は仮の準備中ページ。STEP3の本番ができたら pages/step3.html を差し替える
             { url: 'pages/step3.html', label: 'STEP3', sub: '解説', id: 'tab-step3', hidden: true },
+            // STEP3のボタンを押すと、STEP4〜STEP9のタブが一括で表示される。
+            { url: 'pages/step4.html', label: 'STEP4', sub: '順次処理', id: 'tab-step4', hidden: true },
+            // ★中身は仮の準備中ページ。本番ができたら pages/stepN.html を差し替える
+            { url: 'pages/step5.html', label: 'STEP5', sub: '準備中', id: 'tab-step5', hidden: true },
+            { url: 'pages/step6.html', label: 'STEP6', sub: '準備中', id: 'tab-step6', hidden: true },
+            { url: 'pages/step7.html', label: 'STEP7', sub: '準備中', id: 'tab-step7', hidden: true },
+            { url: 'pages/step8.html', label: 'STEP8', sub: '準備中', id: 'tab-step8', hidden: true },
+            { url: 'pages/step9.html', label: 'STEP9', sub: '準備中', id: 'tab-step9', hidden: true },
             // ↓ 動作確認用 (通信テスト)。不要になったら削除してOK
             { url: 'pages/page1.html', label: 'PAGE1', sub: '接続・送信' },
             { url: 'pages/page2.html', label: 'PAGE2', sub: '受信モニタ' },
