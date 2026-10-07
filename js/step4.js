@@ -1,32 +1,47 @@
-// step2.js (STEP2): 3秒チャレンジゲーム。音声通信 (comm.js) を使う。
+// step4.js (STEP4): Blocklyでプログラムを組む。音声通信 (comm.js) を使う。
 let appState = 0;
-let gameActive = false;
-let currentQuestion = 0;
-let targetColorValue = -1;
-let timerId = null;
-let consecutiveFailures = 0;
+let isSimulating = false;
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const comm = window.parent.comm;
 
 const ledImage = document.getElementById('led-image');
 const deviceStatusText = document.getElementById('device-status');
-const gameMessageEl = document.getElementById('game-message');
-const questionNumEl = document.getElementById('question-num');
 
-const colorTasks = { 0:"消灯させて", 1:"赤を点灯させて", 2:"緑を点灯させて", 3:"黄色を点灯させて", 4:"青を点灯させて", 5:"紫を点灯させて", 6:"水色を点灯させて", 7:"白を点灯させて" };
+window.addEventListener('load', () => {
+    window.workspace = Blockly.inject('blocklyDiv', {
+        toolbox: document.getElementById('toolbox'),
+        move: { scrollbars: true, drag: true, wheel: true }
+    });
+    Blockly.serialization.workspaces.load(defaultBlocksJsonStep4, window.workspace);
+    const blocklyDiv = document.getElementById('blocklyDiv');
+    const resizeObserver = new ResizeObserver(() => {
+        if (window.workspace) { Blockly.svgResize(window.workspace); }
+    });
+    resizeObserver.observe(blocklyDiv);
+    disableManualButtons();
+});
 
 window.addEventListener('DOMContentLoaded', () => {
     if (window.parent && window.parent.commHasClickedConnect) {
         const hint = document.getElementById('connect-hint');
         if (hint) hint.style.display = 'none';
     }
-
     if (comm && comm.connected) {
         deviceStatusText.textContent = `接続中 (${comm.productName})`;
         deviceStatusText.style.color = '#0ff';
-        sendStateToDevice();
     }
+    resetSimulator();
+    disableManualButtons();
 });
+
+// 手動パネルは押せないようにする (Blocklyのプログラム実行に合わせて色だけ変わる)
+function disableManualButtons() {
+    ['red-on', 'red-off', 'green-on', 'green-off', 'blue-on', 'blue-off', 'end-btn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) { btn.style.pointerEvents = 'none'; btn.style.cursor = 'default'; }
+    });
+}
 
 async function connectDevice() {
     const success = await comm.connect();
@@ -41,150 +56,116 @@ async function connectDevice() {
 document.getElementById('connect-btn').addEventListener('click', async () => {
     const hint = document.getElementById('connect-hint');
     if (hint) hint.style.display = 'none';
-    if (window.parent) {
-        window.parent.commHasClickedConnect = true;
-    }
+    if (window.parent) window.parent.commHasClickedConnect = true;
+
     const success = await connectDevice();
     if (success) {
         console.log("◆AI クロック接続確認コマンド送信: [253, 5]");
         await comm.send([253, 5]);
-        sendStateToDevice();
     } else {
         alert('マイクを使えませんでした。\nマイクの使用を許可してから、もう一度お試しください。');
     }
 });
 
-async function sendStateToDevice() {
-    try {
-        await comm.send([248, 240, appState]);
-    } catch (error) {
-        console.error("LED送信エラー:", error);
-    }
-}
-
-window.startGame = async function() {
-    if (!comm.connected) {
-        try { await connectDevice(); } catch (e) {}
-    }
-
-    appState = 8; render();
-    gameActive = true;
-    currentQuestion = 0;
-    gameMessageEl.style.color = "#333";
-
-    if (questionNumEl) questionNumEl.style.display = 'inline-block';
-
-    const clearContainer = document.getElementById('clear-container');
-    if (clearContainer) clearContainer.style.display = 'none';
-
-    nextQuestion();
-}
-
-const startBtnEl = document.getElementById('start-game-btn');
-if (startBtnEl) {
-    startBtnEl.addEventListener('click', startGame);
-}
-
-function nextQuestion() {
-    if (!questionNumEl) return;
-
-    if (currentQuestion >= 5) {
-        questionNumEl.textContent = "クリア！";
-        gameMessageEl.textContent = "全問正解！";
-        gameMessageEl.style.color = "#e65100";
-        gameActive = false;
-
-        const clearContainer = document.getElementById('clear-container');
-        if (clearContainer) clearContainer.style.display = 'block';
-
-        unlockStep3Tab();
-        return;
-    }
-
-    currentQuestion++; questionNumEl.textContent = `第 ${currentQuestion} 問 / 全5問`;
-
-    let nextTarget;
-    do { nextTarget = Math.floor(Math.random() * 8); } while (nextTarget === appState);
-    targetColorValue = nextTarget;
-    gameMessageEl.textContent = `${colorTasks[targetColorValue]}ください`;
-    gameMessageEl.style.color = "#333";
-
-    clearTimeout(timerId);
-    timerId = setTimeout(() => {
-        if (gameActive) {
-            gameActive = false;
-            targetColorValue = -1;
-            consecutiveFailures++;
-
-            if (consecutiveFailures >= 3) {
-                questionNumEl.textContent = "終了！";
-                gameMessageEl.innerHTML = `難しかったかな？<br><span style="font-size: 22px; font-weight: bold; color: #764ba2;">STEP3に進みましょう</span>`;
-
-                const clearContainer = document.getElementById('clear-container');
-                if (clearContainer) clearContainer.style.display = 'block';
-
-                unlockStep3Tab();
-                consecutiveFailures = 0;
-            } else {
-                questionNumEl.textContent = "タイムアップ";
-                gameMessageEl.innerHTML = `残念....<br><span style="font-size: 18px;">(正解数: ${currentQuestion - 1}問)</span>`;
-                gameMessageEl.style.color = "red";
-            }
-        }
-    }, 3000);
-}
-
-function checkGame() {
-    if (!gameActive || targetColorValue === -1) return;
-    if (appState === targetColorValue) {
-        clearTimeout(timerId);
-        targetColorValue = -1;
-        consecutiveFailures = 0;
-        gameMessageEl.textContent = "正解！";
-        gameMessageEl.style.color = "green";
-        setTimeout(() => { if (gameActive) nextQuestion(); }, 600);
-    }
-}
-
+// Blocklyの実行(シミュレーション)に合わせて、LEDの表示色だけを更新する
 function render() {
     if (appState === 8) {
         ledImage.style.backgroundColor = '#555'; ledImage.style.boxShadow = 'none';
-        document.getElementById('red-on').classList.remove('pressed'); document.getElementById('green-on').classList.remove('pressed'); document.getElementById('blue-on').classList.remove('pressed');
+        ['red-on','red-off','green-on','green-off','blue-on','blue-off'].forEach(id => document.getElementById(id).classList.remove('pressed'));
     } else {
         document.getElementById('red-on').classList.toggle('pressed', (appState & 1) !== 0);
         document.getElementById('green-on').classList.toggle('pressed', (appState & 2) !== 0);
         document.getElementById('blue-on').classList.toggle('pressed', (appState & 4) !== 0);
-        if (appState === 0) { ledImage.style.backgroundColor = '#555'; ledImage.style.boxShadow = 'none'; } else {
+        document.getElementById('red-off').classList.toggle('pressed', (appState & 1) === 0);
+        document.getElementById('green-off').classList.toggle('pressed', (appState & 2) === 0);
+        document.getElementById('blue-off').classList.toggle('pressed', (appState & 4) === 0);
+        if (appState === 0) {
+            ledImage.style.backgroundColor = '#555'; ledImage.style.boxShadow = 'none';
+        } else {
             const r = (appState & 1) ? 255 : 0, g = (appState & 2) ? 255 : 0, b = (appState & 4) ? 255 : 0;
             ledImage.style.backgroundColor = `rgb(${r}, ${g}, ${b})`; ledImage.style.boxShadow = `0 0 30px rgb(${r}, ${g}, ${b})`;
         }
     }
-    sendStateToDevice(); checkGame();
 }
 
-window.turnOn = function(value) { if (appState === 8) appState = 0; appState |= value; render(); }
-window.turnOff = function(value) { if (appState === 8) appState = 0; appState &= ~value; render(); }
-window.endApp = function() { appState = 8; render(); }
+function resetSimulator() {
+    appState = 8;
+    render();
+    if (window.workspace) window.workspace.highlightBlock(null);
+}
 
-// 親画面(index.html)の、ID付きで隠してあるSTEP3タブを表示する
-function unlockStep3Tab() {
-    if (window.parent && window.parent.unlockTab) {
-        window.parent.unlockTab('tab-step3');
+// ---- プログラム転送 ----
+// data[0]=230 で始まる配列を comm.send() に渡すと、
+// [253, 1, 転送ブロック番号] のヘッダーを付けて16バイトずつ自動で分割送信される。
+document.getElementById('transfer-btn').addEventListener('click', async () => {
+    if (isSimulating || !window.workspace) return;
+    const startBlock = window.workspace.getBlocksByType('cmd_start')[0];
+    if (!startBlock) return alert("「プログラムスタート」ブロックが見つかりません！");
+
+    let programBytes = [230, 2];
+    let addr = 2;
+    let hasHardwareCommand = false;
+    let currentBlock = startBlock.getNextBlock();
+    while (currentBlock) {
+        if (currentBlock.type === 'cmd_led') {
+            const colorName = currentBlock.getFieldValue('COLOR');
+            const timeSec = Number(currentBlock.getFieldValue('TIME'));
+            let r = 0, g = 0, b = 0;
+            switch (colorName) {
+                case "red": r = 255; break; case "green": g = 255; break; case "blue": b = 255; break;
+                case "yellow": r = 255; g = 255; break; case "purple": r = 255; b = 255; break;
+                case "cyan": g = 255; b = 255; break; case "white": r = 255; g = 255; b = 255; break;
+            }
+            let sec = Math.round(timeSec * 4);
+            addr += 6;
+            programBytes.push(130, r, g, b, sec, addr);
+            hasHardwareCommand = true;
+        }
+        currentBlock = currentBlock.getNextBlock();
     }
-}
 
-// 「STEP3へ進む」ボタン: リセットしてからSTEP3タブをクリックする
-window.goToStep3 = function() {
-    endApp();
-    if (window.parent && window.parent.document) {
-        const step3Tab = window.parent.document.getElementById('tab-step3');
-        if (step3Tab) step3Tab.click();
+    if (hasHardwareCommand) {
+        programBytes.push(231, 250);
+        try {
+            await comm.send(programBytes);
+        } catch (err) {
+            console.error('プログラム転送エラー:', err);
+        }
+    } else {
+        alert("転送するブロックが繋がっていません！");
     }
-}
+});
 
-document.getElementById('red-on').addEventListener('click', () => turnOn(1)); document.getElementById('red-off').addEventListener('click', () => turnOff(1));
-document.getElementById('green-on').addEventListener('click', () => turnOn(2)); document.getElementById('green-off').addEventListener('click', () => turnOff(2));
-document.getElementById('blue-on').addEventListener('click', () => turnOn(4)); document.getElementById('blue-off').addEventListener('click', () => turnOff(4));
-document.getElementById('end-btn').addEventListener('click', endApp);
+// ---- プログラム実行 ----
+document.getElementById('run-btn').addEventListener('click', async () => {
+    if (isSimulating || !window.workspace) return;
+    const startBlock = window.workspace.getBlocksByType('cmd_start')[0];
+    if (!startBlock) return;
 
-render();
+    console.log("◆実行コマンド送信: [253, 2]");
+    comm.send([253, 2]);
+
+    isSimulating = true;
+    window.workspace.highlightBlock(startBlock.id);
+
+    let currentBlock = startBlock.getNextBlock();
+    while (currentBlock) {
+        window.workspace.highlightBlock(currentBlock.id);
+        if (currentBlock.type === 'cmd_led') {
+            const colorName = currentBlock.getFieldValue('COLOR');
+            const timeSec = Number(currentBlock.getFieldValue('TIME'));
+            appState = 0;
+            switch (colorName) {
+                case "red": appState = 1; break; case "green": appState = 2; break; case "blue": appState = 4; break;
+                case "yellow": appState = 3; break; case "purple": appState = 5; break; case "cyan": appState = 6; break; case "white": appState = 7; break;
+            }
+            render();
+            await wait(timeSec * 1000);
+            appState = 0;
+            render();
+        }
+        currentBlock = currentBlock.getNextBlock();
+    }
+    isSimulating = false;
+    resetSimulator();
+});
