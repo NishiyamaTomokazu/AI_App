@@ -19,8 +19,12 @@
         // タブの一覧。ページを増やすときはここに1行足すだけ
         // ==========================================
         const PAGES = [
-            { url: 'step0.html',       label: 'STEP0', sub: '導入' },
+            { url: 'pages/step0.html', label: 'STEP0', sub: '導入' },
             { url: 'pages/step1.html', label: 'STEP1', sub: '光を作ろう' },
+            { url: 'pages/step2.html', label: 'STEP2', sub: '腕試し' },
+            // STEP2をクリア(または3回失敗)するまでは隠しておくタブ。id指定で後から表示する。
+            // ★中身は仮の準備中ページ。STEP3の本番ができたら pages/step3.html を差し替える
+            { url: 'pages/step3.html', label: 'STEP3', sub: '解説', id: 'tab-step3', hidden: true },
             // ↓ 動作確認用 (通信テスト)。不要になったら削除してOK
             { url: 'pages/page1.html', label: 'PAGE1', sub: '接続・送信' },
             { url: 'pages/page2.html', label: 'PAGE2', sub: '受信モニタ' },
@@ -32,11 +36,19 @@
         const buttons = PAGES.map((p, i) => {
             const b = document.createElement('button');
             b.className = 'tab-btn';
+            if (p.id) b.id = p.id;
+            if (p.hidden) b.style.display = 'none';
             b.innerHTML = `${p.label}<br>${p.sub}`;
             b.addEventListener('click', () => showPage(i));
             tabsEl.appendChild(b);
             return b;
         });
+
+        // 隠しタブを表示する (例: window.parent.unlockTab('tab-step3'))
+        window.unlockTab = function(id) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'inline-block';
+        };
 
         function showPage(i) {
             buttons.forEach((b, k) => b.classList.toggle('active', k === i));
@@ -59,9 +71,8 @@
         comm.addEventListener('frameError', (e) => forward('comm-frame-error', e.detail));
         comm.addEventListener('status',     (e) => forward('comm-status', e.detail));
 
-        // const start = parseInt(location.hash.slice(1), 10);
-        // showPage(Number.isInteger(start) && PAGES[start] ? start : 0);
-        showPage(0);   // 最初はSTEP0を表示
+        // 常にSTEP0(先頭のタブ)から開く
+        showPage(0);
     </script>
 </body>
 </html>
