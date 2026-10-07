@@ -146,26 +146,32 @@ document.getElementById('run-btn').addEventListener('click', async () => {
     comm.send([253, 2]);
 
     isSimulating = true;
-    window.workspace.highlightBlock(startBlock.id);
+    try {
+        window.workspace.highlightBlock(startBlock.id);
 
-    let currentBlock = startBlock.getNextBlock();
-    while (currentBlock) {
-        window.workspace.highlightBlock(currentBlock.id);
-        if (currentBlock.type === 'cmd_led') {
-            const colorName = currentBlock.getFieldValue('COLOR');
-            const timeSec = Number(currentBlock.getFieldValue('TIME'));
-            appState = 0;
-            switch (colorName) {
-                case "red": appState = 1; break; case "green": appState = 2; break; case "blue": appState = 4; break;
-                case "yellow": appState = 3; break; case "purple": appState = 5; break; case "cyan": appState = 6; break; case "white": appState = 7; break;
+        let currentBlock = startBlock.getNextBlock();
+        while (currentBlock) {
+            window.workspace.highlightBlock(currentBlock.id);
+            if (currentBlock.type === 'cmd_led') {
+                const colorName = currentBlock.getFieldValue('COLOR');
+                const timeSec = Number(currentBlock.getFieldValue('TIME'));
+                appState = 0;
+                switch (colorName) {
+                    case "red": appState = 1; break; case "green": appState = 2; break; case "blue": appState = 4; break;
+                    case "yellow": appState = 3; break; case "purple": appState = 5; break; case "cyan": appState = 6; break; case "white": appState = 7; break;
+                }
+                render();
+                await wait(timeSec * 1000);
+                appState = 0;
+                render();
             }
-            render();
-            await wait(timeSec * 1000);
-            appState = 0;
-            render();
+            currentBlock = currentBlock.getNextBlock();
         }
-        currentBlock = currentBlock.getNextBlock();
+    } catch (err) {
+        // 途中で何か失敗しても、isSimulatingを確実に解除する (これが無いと次回押しても反応しなくなる)
+        console.error('プログラム実行中にエラー:', err);
+    } finally {
+        isSimulating = false;
+        resetSimulator();
     }
-    isSimulating = false;
-    resetSimulator();
 });
