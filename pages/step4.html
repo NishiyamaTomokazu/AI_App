@@ -1,177 +1,78 @@
-// step4.js (STEP4): Blocklyでプログラムを組む。音声通信 (comm.js) を使う。
-let appState = 0;
-let isSimulating = false;
-const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LED Control App - STEP4</title>
+<link rel="stylesheet" href="../css/style.css">
+<!-- Blocklyのライブラリ (CDNだと学校などのネットワークで読み込めないことがあるため、同梱) -->
+<script src="../vendor/blockly.min.js"></script>
+</head>
+<body class="iframe-body">
 
-const comm = window.parent.comm;
+<div class="top-controls step4">
+    <button class="connect-btn" id="connect-btn">🪄 AI クロックに接続</button>
+    <span class="connect-hint" id="connect-hint">← まずはここを押そう！</span>
+</div>
 
-const ledImage = document.getElementById('led-image');
-const deviceStatusText = document.getElementById('device-status');
+<div class="app-container step4">
+    <div class="panel-header">
+        <h2>💻 プログラミングラボ</h2>
+        <p>ブロックをつなげて、光の魔法を自動化しよう！</p>
+    </div>
 
-window.addEventListener('load', () => {
-    window.workspace = Blockly.inject('blocklyDiv', {
-        toolbox: document.getElementById('toolbox'),
-        move: { scrollbars: true, drag: true, wheel: true }
-    });
-    Blockly.serialization.workspaces.load(defaultBlocksJsonStep4, window.workspace);
-    const blocklyDiv = document.getElementById('blocklyDiv');
-    const resizeObserver = new ResizeObserver(() => {
-        if (window.workspace) { Blockly.svgResize(window.workspace); }
-    });
-    resizeObserver.observe(blocklyDiv);
-    disableManualButtons();
-});
+    <div class="content-wrapper">
+        <!-- 左側：手動パネル (操作不可。Blocklyの実行に合わせて色だけ変わる) -->
+        <div class="left-panel">
+            <div class="led-container"><div class="led" id="led-image"></div></div>
+            <!-- このSTEPでは手動操作はしないので、すべて disabled (押せない) にしてある -->
+            <div class="controls">
+                <div class="color-col">
+                    <span class="color-label">🔴 赤</span>
+                    <button class="btn on-btn" id="red-on" disabled>ON</button>
+                    <button class="btn off-btn" id="red-off" disabled>OFF</button>
+                </div>
+                <div class="color-col">
+                    <span class="color-label">🟢 緑</span>
+                    <button class="btn on-btn" id="green-on" disabled>ON</button>
+                    <button class="btn off-btn" id="green-off" disabled>OFF</button>
+                </div>
+                <div class="color-col">
+                    <span class="color-label">🔵 青</span>
+                    <button class="btn on-btn" id="blue-on" disabled>ON</button>
+                    <button class="btn off-btn" id="blue-off" disabled>OFF</button>
+                </div>
+            </div>
+            <div class="end-container"><button class="btn" id="end-btn" disabled>リセット</button></div>
+            <!-- 「現在の変数(appState)」の表示は削除。接続状態のみ表示 -->
+            <div class="state-display">
+                [ <span id="device-status">未接続</span> ]
+            </div>
+        </div>
 
-window.addEventListener('DOMContentLoaded', () => {
-    if (window.parent && window.parent.commHasClickedConnect) {
-        const hint = document.getElementById('connect-hint');
-        if (hint) hint.style.display = 'none';
-    }
-    if (comm && comm.connected) {
-        deviceStatusText.textContent = `接続中 (${comm.productName})`;
-        deviceStatusText.style.color = '#0ff';
-    }
-    resetSimulator();
-    disableManualButtons();
-});
+        <!-- 右側：プログラミングパネル -->
+        <div class="right-panel" style="justify-content: flex-start;">
 
-// 手動パネルは押せないようにする (Blocklyのプログラム実行に合わせて色だけ変わる)
-function disableManualButtons() {
-    ['red-on', 'red-off', 'green-on', 'green-off', 'blue-on', 'blue-off', 'end-btn'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) { btn.style.pointerEvents = 'none'; btn.style.cursor = 'default'; }
-    });
-}
+            <button class="start-btn" id="transfer-btn" style="width: 100%; font-size: 18px; padding: 10px; margin-bottom: 10px; background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">
+                🚀 プログラム転送
+            </button>
+            <button class="start-btn" id="run-btn" style="width: 100%; font-size: 18px; padding: 10px; margin-bottom: 15px; background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #333;">
+                ▶️ プログラム実行
+            </button>
 
-async function connectDevice() {
-    const success = await comm.connect();
-    if (success) {
-        deviceStatusText.textContent = `接続中 (${comm.productName})`;
-        deviceStatusText.style.color = '#0ff';
-        return true;
-    }
-    return false;
-}
+            <xml id="toolbox" style="display: none">
+                <block type="cmd_led">
+                    <field name="COLOR">red</field>
+                    <field name="TIME">1</field>
+                </block>
+            </xml>
 
-document.getElementById('connect-btn').addEventListener('click', async () => {
-    const hint = document.getElementById('connect-hint');
-    if (hint) hint.style.display = 'none';
-    if (window.parent) window.parent.commHasClickedConnect = true;
+            <div id="blocklyDiv" style="height: 450px; width: 100%; border: 2px solid #ccc; border-radius: 8px;"></div>
+        </div>
+    </div>
+</div>
 
-    const success = await connectDevice();
-    if (success) {
-        console.log("◆AI クロック接続確認コマンド送信: [253, 5]");
-        await comm.send([253, 5]);
-    } else {
-        alert('マイクを使えませんでした。\nマイクの使用を許可してから、もう一度お試しください。');
-    }
-});
-
-// Blocklyの実行(シミュレーション)に合わせて、LEDの表示色だけを更新する
-function render() {
-    if (appState === 8) {
-        ledImage.style.backgroundColor = '#555'; ledImage.style.boxShadow = 'none';
-        ['red-on','red-off','green-on','green-off','blue-on','blue-off'].forEach(id => document.getElementById(id).classList.remove('pressed'));
-    } else {
-        document.getElementById('red-on').classList.toggle('pressed', (appState & 1) !== 0);
-        document.getElementById('green-on').classList.toggle('pressed', (appState & 2) !== 0);
-        document.getElementById('blue-on').classList.toggle('pressed', (appState & 4) !== 0);
-        document.getElementById('red-off').classList.toggle('pressed', (appState & 1) === 0);
-        document.getElementById('green-off').classList.toggle('pressed', (appState & 2) === 0);
-        document.getElementById('blue-off').classList.toggle('pressed', (appState & 4) === 0);
-        if (appState === 0) {
-            ledImage.style.backgroundColor = '#555'; ledImage.style.boxShadow = 'none';
-        } else {
-            const r = (appState & 1) ? 255 : 0, g = (appState & 2) ? 255 : 0, b = (appState & 4) ? 255 : 0;
-            ledImage.style.backgroundColor = `rgb(${r}, ${g}, ${b})`; ledImage.style.boxShadow = `0 0 30px rgb(${r}, ${g}, ${b})`;
-        }
-    }
-}
-
-function resetSimulator() {
-    appState = 8;
-    render();
-    if (window.workspace) window.workspace.highlightBlock(null);
-}
-
-// ---- プログラム転送 ----
-// data[0]=230 で始まる配列を comm.send() に渡すと、
-// [253, 1, 転送ブロック番号] のヘッダーを付けて16バイトずつ自動で分割送信される。
-document.getElementById('transfer-btn').addEventListener('click', async () => {
-    if (isSimulating || !window.workspace) return;
-    const startBlock = window.workspace.getBlocksByType('cmd_start')[0];
-    if (!startBlock) return alert("「プログラムスタート」ブロックが見つかりません！");
-
-    let programBytes = [230, 2];
-    let addr = 2;
-    let hasHardwareCommand = false;
-    let currentBlock = startBlock.getNextBlock();
-    while (currentBlock) {
-        if (currentBlock.type === 'cmd_led') {
-            const colorName = currentBlock.getFieldValue('COLOR');
-            const timeSec = Number(currentBlock.getFieldValue('TIME'));
-            let r = 0, g = 0, b = 0;
-            switch (colorName) {
-                case "red": r = 255; break; case "green": g = 255; break; case "blue": b = 255; break;
-                case "yellow": r = 255; g = 255; break; case "purple": r = 255; b = 255; break;
-                case "cyan": g = 255; b = 255; break; case "white": r = 255; g = 255; b = 255; break;
-            }
-            let sec = Math.round(timeSec * 4);
-            addr += 6;
-            programBytes.push(130, r, g, b, sec, addr);
-            hasHardwareCommand = true;
-        }
-        currentBlock = currentBlock.getNextBlock();
-    }
-
-    if (hasHardwareCommand) {
-        programBytes.push(231, 250);
-        try {
-            await comm.send(programBytes);
-        } catch (err) {
-            console.error('プログラム転送エラー:', err);
-        }
-    } else {
-        alert("転送するブロックが繋がっていません！");
-    }
-});
-
-// ---- プログラム実行 ----
-document.getElementById('run-btn').addEventListener('click', async () => {
-    if (isSimulating || !window.workspace) return;
-    const startBlock = window.workspace.getBlocksByType('cmd_start')[0];
-    if (!startBlock) return;
-
-    console.log("◆実行コマンド送信: [253, 2]");
-    comm.send([253, 2]);
-
-    isSimulating = true;
-    try {
-        window.workspace.highlightBlock(startBlock.id);
-
-        let currentBlock = startBlock.getNextBlock();
-        while (currentBlock) {
-            window.workspace.highlightBlock(currentBlock.id);
-            if (currentBlock.type === 'cmd_led') {
-                const colorName = currentBlock.getFieldValue('COLOR');
-                const timeSec = Number(currentBlock.getFieldValue('TIME'));
-                appState = 0;
-                switch (colorName) {
-                    case "red": appState = 1; break; case "green": appState = 2; break; case "blue": appState = 4; break;
-                    case "yellow": appState = 3; break; case "purple": appState = 5; break; case "cyan": appState = 6; break; case "white": appState = 7; break;
-                }
-                render();
-                await wait(timeSec * 1000);
-                appState = 0;
-                render();
-            }
-            currentBlock = currentBlock.getNextBlock();
-        }
-    } catch (err) {
-        // 途中で何か失敗しても、isSimulatingを確実に解除する (これが無いと次回押しても反応しなくなる)
-        console.error('プログラム実行中にエラー:', err);
-    } finally {
-        isSimulating = false;
-        resetSimulator();
-    }
-});
+<script src="../js/blockly_config.js"></script>
+<script src="../js/step4.js"></script>
+</body>
+</html>
