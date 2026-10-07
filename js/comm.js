@@ -211,6 +211,7 @@ class Comm extends EventTarget {
       return Promise.resolve(false);
     }
     console.log('◆ 送信データ (元データ):', data, `→ ${packets.length}パケット`);
+    packets.forEach((p, i) => console.log(`  パケット${i + 1}/${packets.length} (19バイト):`, p));
     const job = this._txChain.then(() => this._play(packets, opts));
     this._txChain = job.catch(() => {});
     return job;
