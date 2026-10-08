@@ -3,14 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LED Control App - STEP5 (準備中)</title>
+<title>LED Control App - STEP5</title>
 <link rel="stylesheet" href="../css/style.css">
+<!-- Blocklyのライブラリ (CDNだと読み込めないことがあるため、同梱) -->
+<script src="../vendor/blockly.min.js"></script>
 </head>
 <body class="iframe-body">
-    <!-- ★仮ページ: STEP5の本番ができるまでのプレースホルダー -->
-    <div class="app-container step0" style="padding: 40px; text-align: center;">
-        <h1 style="margin:0 0 10px;">🚧 STEP5は準備中です</h1>
-        <p>もうすぐ公開予定です。お楽しみに！</p>
+
+<div class="top-controls step5">
+    <button class="connect-btn" id="connect-btn">🪄 AI クロックに接続</button>
+    <span class="connect-hint" id="connect-hint">← まずはここを押そう！</span>
+</div>
+
+<div class="app-container step5">
+    <div class="panel-header">
+        <h2>🎙️ 音センサを使ってみよう</h2>
+        <p>「音が鳴るまで待つ」ブロックを使って、プログラムを作ろう！</p>
     </div>
+
+    <div class="content-wrapper">
+        <!-- 左側：手動パネル (操作不可。Blocklyの実行に合わせて色だけ変わる) -->
+        <div class="left-panel">
+            <div class="led-container"><div class="led" id="led-image"></div></div>
+            <div class="controls">
+                <div class="color-col">
+                    <span class="color-label">🔴 赤</span>
+                    <button class="btn on-btn" id="red-on" disabled>ON</button>
+                    <button class="btn off-btn" id="red-off" disabled>OFF</button>
+                </div>
+                <div class="color-col">
+                    <span class="color-label">🟢 緑</span>
+                    <button class="btn on-btn" id="green-on" disabled>ON</button>
+                    <button class="btn off-btn" id="green-off" disabled>OFF</button>
+                </div>
+                <div class="color-col">
+                    <span class="color-label">🔵 青</span>
+                    <button class="btn on-btn" id="blue-on" disabled>ON</button>
+                    <button class="btn off-btn" id="blue-off" disabled>OFF</button>
+                </div>
+            </div>
+            <div class="end-container"><button class="btn" id="end-btn" disabled>リセット</button></div>
+            <!-- 「現在の変数(送信データ)」の表示は削除。接続状態の下にSTEP6へのリンクを置く -->
+            <div class="state-display">
+                [ <span id="device-status">未接続</span> ]
+            </div>
+            <p class="outro-text" style="cursor: pointer; font-weight: bold; color: #007bff; text-align: center; margin-top: 10px;" onclick="goToStep6()">
+                STEP6 へ進もう 👉
+            </p>
+        </div>
+
+        <!-- 右側：プログラミングパネル -->
+        <div class="right-panel" style="justify-content: flex-start;">
+
+            <button class="start-btn" id="transfer-btn" style="width: 100%; font-size: 18px; padding: 10px; margin-bottom: 10px; background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">
+                🚀 プログラム転送
+            </button>
+            <button class="start-btn" id="run-btn" style="width: 100%; font-size: 18px; padding: 10px; margin-bottom: 15px; background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #333;">
+                ▶️ プログラム実行
+            </button>
+
+            <xml id="toolbox" style="display: none">
+                <block type="cmd_led">
+                    <field name="COLOR">red</field>
+                    <field name="TIME">1</field>
+                </block>
+                <block type="cmd_wait_sound"></block>
+            </xml>
+
+            <div id="blocklyDiv" style="height: 450px; width: 100%; border: 2px solid #ccc; border-radius: 8px;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/blockly_config.js"></script>
+<script src="../js/step5.js"></script>
 </body>
 </html>
