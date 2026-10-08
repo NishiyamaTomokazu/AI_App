@@ -25,6 +25,7 @@ window.addEventListener('comm-byte', (e) => {
         fskBuffer = [];
         if (data[0] === 244) {
             brightnessText.textContent = data[1];
+            window.dispatchEvent(new CustomEvent('brightness-received', { detail: { value: data[1] } }));
         } else {
             window.dispatchEvent(new CustomEvent('sensor-detected', { detail: { data } }));
         }
@@ -42,6 +43,17 @@ function waitForCondition(targetCode) {
             }
         };
         window.addEventListener('sensor-detected', listener);
+    });
+}
+
+// 次に明るさデータ(244, 値)を1つ受信するまで待つ (プログラム転送・実行の開始を少し遅らせるために使う)
+function waitForNextBrightness() {
+    return new Promise((resolve) => {
+        const listener = (event) => {
+            window.removeEventListener('brightness-received', listener);
+            resolve(event.detail.value);
+        };
+        window.addEventListener('brightness-received', listener);
     });
 }
 
@@ -221,10 +233,19 @@ document.getElementById('transfer-btn').addEventListener('click', async () => {
 
     if (payloadBytes.length > 0) {
         let programBytes = [230, 2, ...payloadBytes, 231, 250];
+        const transferBtn = document.getElementById('transfer-btn');
+        const originalLabel = transferBtn.textContent;
+        transferBtn.disabled = true;
+        transferBtn.textContent = '⏳ 明るさデータの受信を待っています...';
         try {
+            // 明るさデータ(244, 値)を1つ受信するまで、転送を始めずに待つ
+            await waitForNextBrightness();
             await comm.send(programBytes);
         } catch (err) {
             console.error('プログラム転送エラー:', err);
+        } finally {
+            transferBtn.disabled = false;
+            transferBtn.textContent = originalLabel;
         }
     } else {
         alert("転送するブロックが繋がっていません！");
@@ -236,6 +257,15 @@ document.getElementById('run-btn').addEventListener('click', async () => {
     if (isSimulating || !window.workspace) return;
     const startBlock = window.workspace.getBlocksByType('cmd_start')[0];
     if (!startBlock) return;
+
+    const runBtn = document.getElementById('run-btn');
+    const originalRunLabel = runBtn.textContent;
+    runBtn.disabled = true;
+    runBtn.textContent = '⏳ 明るさデータの受信を待っています...';
+    // 明るさデータ(244, 値)を1つ受信するまで、実行コマンドの送信を始めずに待つ
+    await waitForNextBrightness();
+    runBtn.disabled = false;
+    runBtn.textContent = originalRunLabel;
 
     console.log("◆実行コマンド送信: [253, 2]");
     comm.send([253, 2]);
