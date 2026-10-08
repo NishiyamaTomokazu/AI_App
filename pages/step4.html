@@ -44,10 +44,13 @@
                 </div>
             </div>
             <div class="end-container"><button class="btn" id="end-btn" disabled>リセット</button></div>
-            <!-- 「現在の変数(appState)」の表示は削除。接続状態のみ表示 -->
+            <!-- 「現在の変数(appState)」の表示は削除。接続状態の下にSTEP5へのリンクを置く -->
             <div class="state-display">
                 [ <span id="device-status">未接続</span> ]
             </div>
+            <p class="outro-text" style="cursor: pointer; font-weight: bold; color: #007bff; text-align: center; margin-top: 10px;" onclick="goToStep5()">
+                STEP5 へ進もう 👉
+            </p>
         </div>
 
         <!-- 右側：プログラミングパネル -->
