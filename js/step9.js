@@ -11,17 +11,23 @@ const comm = window.parent.comm;
 
 const ledImage = document.getElementById('led-image');
 const deviceStatusText = document.getElementById('device-status');
+const brightnessText = document.getElementById('brightness-val');
 
-// ===== FSK受信の監視 (comm-byte イベントの並びを見て、170/171/180/181 の2バイト組を検出する) =====
+// ===== FSK受信の監視 (comm-byte イベントの並びを見て、170/171/180/181/244 の2バイト組を検出する) =====
+//   244 は「明るさ」専用のコード。[244, 明るさ(0〜100)] が不定期に届くたびに表示を更新する。
 let fskBuffer = [];
 window.addEventListener('comm-byte', (e) => {
     const value = e.detail.value;
     fskBuffer.push(value);
     if (fskBuffer.length > 2) fskBuffer.shift();
-    if (fskBuffer.length === 2 && [170, 171, 180, 181].includes(fskBuffer[0])) {
+    if (fskBuffer.length === 2 && [170, 171, 180, 181, 244].includes(fskBuffer[0])) {
         const data = [...fskBuffer];
         fskBuffer = [];
-        window.dispatchEvent(new CustomEvent('sensor-detected', { detail: { data } }));
+        if (data[0] === 244) {
+            brightnessText.textContent = data[1];
+        } else {
+            window.dispatchEvent(new CustomEvent('sensor-detected', { detail: { data } }));
+        }
     }
 });
 
