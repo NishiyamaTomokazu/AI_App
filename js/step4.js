@@ -175,3 +175,11 @@ document.getElementById('run-btn').addEventListener('click', async () => {
         resetSimulator();
     }
 });
+
+// 親画面(index.html)のSTEP5タブへ移動する (STEP3の時点で既に表示されている)
+window.goToStep5 = function() {
+    if (window.parent && window.parent.document) {
+        const step5Tab = window.parent.document.getElementById('tab-step5');
+        if (step5Tab) step5Tab.click();
+    }
+};
