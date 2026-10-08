@@ -247,3 +247,18 @@ const defaultBlocksJsonStep8 = {
         ]
     }
 };
+
+// ==========================================
+// 初期配置するブロックのデータ (STEP9用)
+//   「プログラムスタート」の下に、LEDブロックを1つだけ繋げておく
+// ==========================================
+const defaultBlocksJsonStep9 = {
+    "blocks": {
+        "blocks": [
+            {
+                "type": "cmd_start", "x": 20, "y": 20, "deletable": false, "movable": false,
+                "next": { "block": { "type": "cmd_led", "fields": { "COLOR": "red", "TIME": 1 } } }
+            }
+        ]
+    }
+};
