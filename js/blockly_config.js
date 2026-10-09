@@ -262,3 +262,53 @@ const defaultBlocksJsonStep9 = {
         ]
     }
 };
+
+// ==========================================
+// STEP7 用の新しいブロック定義 (光センサ)
+//   明るくなるまで待つ[N] / 暗くなるまで待つ[N] (Nは0〜100、初期値50)
+// ==========================================
+Blockly.defineBlocksWithJsonArray([
+    {
+        "type": "cmd_wait_bright_up",
+        "message0": "明るくなるまで待つ %1",
+        "args0": [
+            { "type": "field_number", "name": "N", "value": 50, "min": 0, "max": 100, "precision": 1 }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "明るさが指定した値以上になるまでプログラムを一時停止します。"
+    },
+    {
+        "type": "cmd_wait_bright_down",
+        "message0": "暗くなるまで待つ %1",
+        "args0": [
+            { "type": "field_number", "name": "N", "value": 50, "min": 0, "max": 100, "precision": 1 }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "明るさが指定した値以下になるまでプログラムを一時停止します。"
+    }
+]);
+
+// ==========================================
+// 初期配置するブロックのデータ (STEP7用)
+//   「プログラムスタート」->「暗くなるまで待つ[50]」->「赤LED1秒点灯」
+// ==========================================
+const defaultBlocksJsonStep7Light = {
+    "blocks": {
+        "blocks": [
+            {
+                "type": "cmd_start", "x": 20, "y": 20, "deletable": false, "movable": false,
+                "next": {
+                    "block": {
+                        "type": "cmd_wait_bright_down",
+                        "fields": { "N": 50 },
+                        "next": { "block": { "type": "cmd_led", "fields": { "COLOR": "red", "TIME": 1 } } }
+                    }
+                }
+            }
+        ]
+    }
+};
