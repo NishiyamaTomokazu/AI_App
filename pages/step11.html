@@ -3,22 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LED Control App - STEP5</title>
+<title>LED Control App - STEP11</title>
 <link rel="stylesheet" href="../css/style.css">
 <!-- Blocklyのライブラリ (CDNだと読み込めないことがあるため、同梱) -->
 <script src="../vendor/blockly.min.js"></script>
 </head>
 <body class="iframe-body">
 
-<div class="top-controls step5">
+<!-- CSSにSTEP9専用のスタイルが無いため、元のAI_Clockと同じくSTEP8のクラス名をそのまま使っている -->
+<div class="top-controls step8">
     <button class="connect-btn" id="connect-btn">🪄 AI クロックに接続</button>
     <span class="connect-hint" id="connect-hint">← まずはここを押そう！</span>
 </div>
 
-<div class="app-container step5">
+<div class="app-container step8">
     <div class="panel-header">
-        <h2>🎙️ 音センサを使ってみよう</h2>
-        <p>「音が鳴るまで待つ」ブロックを使って、プログラムを作ろう！</p>
+        <h2>🏆 自由にプログラムを作ってみよう</h2>
+        <p>自由にブロックを組み合わせて、自分だけのプログラムを作ろう！</p>
     </div>
 
     <div class="content-wrapper">
@@ -43,13 +44,13 @@
                 </div>
             </div>
             <div class="end-container"><button class="btn" id="end-btn" disabled>リセット</button></div>
-            <!-- 「現在の変数(送信データ)」の表示は削除。接続状態の下にSTEP6へのリンクを置く -->
+            <!-- 「現在の変数(送信データ)」の表示は削除。STEP9が最後なので次へのリンクは無し -->
             <div class="state-display">
                 [ <span id="device-status">未接続</span> ]
             </div>
-            <p class="outro-text" style="cursor: pointer; font-weight: bold; color: #007bff; text-align: center; margin-top: 10px;" onclick="goToStep6()">
-                STEP6 へ進もう 👉
-            </p>
+            <div class="state-display" style="margin-top: 8px;">
+                明るさ : <span id="brightness-val">-</span>
+            </div>
         </div>
 
         <!-- 右側：プログラミングパネル -->
@@ -67,7 +68,13 @@
                     <field name="COLOR">red</field>
                     <field name="TIME">1</field>
                 </block>
+                <block type="cmd_wait_switch"></block>
                 <block type="cmd_wait_sound"></block>
+                <block type="cmd_loop"></block>
+                <block type="cmd_if"></block>
+                <block type="cmd_if_else"></block>
+                <block type="cond_switch_on"></block>
+                <block type="cond_switch_off"></block>
             </xml>
 
             <div id="blocklyDiv" style="height: 450px; width: 100%; border: 2px solid #ccc; border-radius: 8px;"></div>
@@ -76,6 +83,6 @@
 </div>
 
 <script src="../js/blockly_config.js"></script>
-<script src="../js/step5.js"></script>
+<script src="../js/step11.js"></script>
 </body>
 </html>

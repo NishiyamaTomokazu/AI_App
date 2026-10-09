@@ -3,22 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LED Control App - STEP5</title>
+<title>LED Control App - STEP10</title>
 <link rel="stylesheet" href="../css/style.css">
 <!-- Blocklyのライブラリ (CDNだと読み込めないことがあるため、同梱) -->
 <script src="../vendor/blockly.min.js"></script>
 </head>
 <body class="iframe-body">
 
-<div class="top-controls step5">
+<div class="top-controls step8">
     <button class="connect-btn" id="connect-btn">🪄 AI クロックに接続</button>
     <span class="connect-hint" id="connect-hint">← まずはここを押そう！</span>
 </div>
 
-<div class="app-container step5">
+<div class="app-container step8">
     <div class="panel-header">
-        <h2>🎙️ 音センサを使ってみよう</h2>
-        <p>「音が鳴るまで待つ」ブロックを使って、プログラムを作ろう！</p>
+        <h2>🔁 繰り返しを使ってみよう</h2>
+        <p>指定した回数だけプログラムをループさせるブロックを使おう！</p>
     </div>
 
     <div class="content-wrapper">
@@ -43,12 +43,12 @@
                 </div>
             </div>
             <div class="end-container"><button class="btn" id="end-btn" disabled>リセット</button></div>
-            <!-- 「現在の変数(送信データ)」の表示は削除。接続状態の下にSTEP6へのリンクを置く -->
+            <!-- 「現在の変数(送信データ)」の表示は削除。接続状態の下にSTEP9へのリンクを置く -->
             <div class="state-display">
                 [ <span id="device-status">未接続</span> ]
             </div>
-            <p class="outro-text" style="cursor: pointer; font-weight: bold; color: #007bff; text-align: center; margin-top: 10px;" onclick="goToStep6()">
-                STEP6 へ進もう 👉
+            <p class="outro-text" style="cursor: pointer; font-weight: bold; color: #007bff; text-align: center; margin-top: 10px;" onclick="goToStep11()">
+                STEP11 へ進もう 👉
             </p>
         </div>
 
@@ -63,11 +63,11 @@
             </button>
 
             <xml id="toolbox" style="display: none">
+                <block type="cmd_loop"></block>
                 <block type="cmd_led">
                     <field name="COLOR">red</field>
                     <field name="TIME">1</field>
                 </block>
-                <block type="cmd_wait_sound"></block>
             </xml>
 
             <div id="blocklyDiv" style="height: 450px; width: 100%; border: 2px solid #ccc; border-radius: 8px;"></div>
@@ -76,6 +76,6 @@
 </div>
 
 <script src="../js/blockly_config.js"></script>
-<script src="../js/step5.js"></script>
+<script src="../js/step10.js"></script>
 </body>
 </html>

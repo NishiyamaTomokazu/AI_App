@@ -1,6 +1,8 @@
-// step9.js (STEP9: 分岐処理)。条件分岐 (もし〜なら)。音声通信 (comm.js) を使う。
+// step11.js (STEP11: 総合)。自由課題。これまでの全ブロックを組み合わせる。音声通信 (comm.js) を使う。
+//   初期配置ブロックは「プログラムスタート」の下にLEDブロックを1つだけ繋げた、シンプルな形。
 //   マイコンから FSK で [180または181, 結果(0/1)] が届くと、条件分岐の判定として扱う。
 //     180 = 「もし SW=ON なら」の判定結果 / 181 = 「もし SW=OFF なら」の判定結果
+//   マイコンから FSK で [244, 明るさ(0-100)] が不定期に届くと、明るさの表示を更新する。
 //   専用のマイクは起動せず、comm が接続時から受信し続けているバイト列をそのまま利用する。
 let appState = 0;
 let isSimulating = false;
@@ -10,17 +12,42 @@ const comm = window.parent.comm;
 
 const ledImage = document.getElementById('led-image');
 const deviceStatusText = document.getElementById('device-status');
+const brightnessValEl = document.getElementById('brightness-val');
 
-// ===== FSK受信の監視 (comm-byte イベントの並びを見て、170/171/180/181 の2バイト組を検出する) =====
+// ===== 明るさ(244, 値) の受信 =====
+// マイコンから不定期に送られてくる。受信するたびに表示を更新する。
+let brightnessValue = null;
+window.addEventListener('brightness-received', (e) => {
+    brightnessValue = e.detail.value;
+    if (brightnessValEl) brightnessValEl.textContent = brightnessValue;
+});
+
+// 明るさデータを1つ受信するまで待つ（まだ受信していない場合のみ使う）
+function waitForNextBrightness() {
+    if (brightnessValue !== null) return Promise.resolve(brightnessValue);
+    return new Promise((resolve) => {
+        const listener = (event) => {
+            window.removeEventListener('brightness-received', listener);
+            resolve(event.detail.value);
+        };
+        window.addEventListener('brightness-received', listener);
+    });
+}
+
+// ===== FSK受信の監視 (comm-byte イベントの並びを見て、170/171/180/181/244 の2バイト組を検出する) =====
 let fskBuffer = [];
 window.addEventListener('comm-byte', (e) => {
     const value = e.detail.value;
     fskBuffer.push(value);
     if (fskBuffer.length > 2) fskBuffer.shift();
-    if (fskBuffer.length === 2 && [170, 171, 180, 181].includes(fskBuffer[0])) {
+    if (fskBuffer.length === 2 && [170, 171, 180, 181, 244].includes(fskBuffer[0])) {
         const data = [...fskBuffer];
         fskBuffer = [];
-        window.dispatchEvent(new CustomEvent('sensor-detected', { detail: { data } }));
+        if (data[0] === 244) {
+            window.dispatchEvent(new CustomEvent('brightness-received', { detail: { value: data[1] } }));
+        } else {
+            window.dispatchEvent(new CustomEvent('sensor-detected', { detail: { data } }));
+        }
     }
 });
 
@@ -38,7 +65,7 @@ function waitForCondition(targetCode) {
     });
 }
 
-// 「音が鳴るまで待つ」「スイッチが押されるまで待つ」(STEP9のツールボックスには無いが、互換のため残す)
+// 「音が鳴るまで待つ」「スイッチが押されるまで待つ」
 function waitForSensor(targetCode, targetValue) {
     return new Promise((resolve) => {
         const listener = (event) => {
@@ -57,7 +84,7 @@ window.addEventListener('load', () => {
         toolbox: document.getElementById('toolbox'),
         move: { scrollbars: true, drag: true, wheel: true }
     });
-    Blockly.serialization.workspaces.load(defaultBlocksJsonStep7, window.workspace);
+    Blockly.serialization.workspaces.load(defaultBlocksJsonStep9, window.workspace);
     const blocklyDiv = document.getElementById('blocklyDiv');
     const resizeObserver = new ResizeObserver(() => {
         if (window.workspace) Blockly.svgResize(window.workspace);
@@ -128,7 +155,7 @@ function resetSimulator() {
 }
 
 // ---- プログラム転送 ----
-// cmd_if / cmd_if_else は入れ子になるため、まず各ブロックの送信先アドレスを計算してから (assignAddresses)、
+// cmd_if / cmd_if_else / cmd_loop は入れ子になるため、まず各ブロックの送信先アドレスを計算してから (assignAddresses)、
 // 実際のバイト列を組み立てる (generateBytes)、2段階の処理になっている。元のロジックをそのまま移植。
 document.getElementById('transfer-btn').addEventListener('click', async () => {
     if (isSimulating || !window.workspace) return;
@@ -151,6 +178,14 @@ document.getElementById('transfer-btn').addEventListener('click', async () => {
                 if (elseBlock) currentAddr = assignAddresses(elseBlock, currentAddr);
                 if (!doBlock) info.trueStart = currentAddr;
                 if (!elseBlock) info.falseStart = currentAddr;
+            } else if (block.type === 'cmd_loop') {
+                info.size = 3;
+                currentAddr += 3;
+                let doBlock = block.getInputTargetBlock('DO');
+                info.bodyStart = currentAddr;
+                if (doBlock) currentAddr = assignAddresses(doBlock, currentAddr);
+                info.loopEndAddr = currentAddr;
+                currentAddr += 2;
             } else if (block.type === 'cmd_led') {
                 info.size = 6; currentAddr += 6;
             } else if (block.type === 'cmd_wait_sound' || block.type === 'cmd_wait_switch') {
@@ -174,6 +209,12 @@ document.getElementById('transfer-btn').addEventListener('click', async () => {
                 if (doBlock) bytes.push(...generateBytes(doBlock, nextAddr));
                 let elseBlock = block.getInputTargetBlock('ELSE');
                 if (elseBlock) bytes.push(...generateBytes(elseBlock, nextAddr));
+            } else if (block.type === 'cmd_loop') {
+                let count = Number(block.getFieldValue('COUNT'));
+                bytes.push(190, count, info.bodyStart);
+                let doBlock = block.getInputTargetBlock('DO');
+                if (doBlock) bytes.push(...generateBytes(doBlock, info.loopEndAddr));
+                bytes.push(191, nextAddr);
             } else if (block.type === 'cmd_led') {
                 const colorName = block.getFieldValue('COLOR');
                 const timeSec = Number(block.getFieldValue('TIME'));
@@ -199,6 +240,8 @@ document.getElementById('transfer-btn').addEventListener('click', async () => {
     let payloadBytes = generateBytes(startBlock.getNextBlock(), endAddr);
 
     if (payloadBytes.length > 0) {
+        // 明るさデータを1つ受信するまで、転送の開始を待つ
+        await waitForNextBrightness();
         let programBytes = [230, 2, ...payloadBytes, 231, 250];
         try {
             await comm.send(programBytes);
@@ -215,6 +258,9 @@ document.getElementById('run-btn').addEventListener('click', async () => {
     if (isSimulating || !window.workspace) return;
     const startBlock = window.workspace.getBlocksByType('cmd_start')[0];
     if (!startBlock) return;
+
+    // 明るさデータを1つ受信するまで、実行コマンドの送信を待つ
+    await waitForNextBrightness();
 
     console.log("◆実行コマンド送信: [253, 2]");
     comm.send([253, 2]);
@@ -257,6 +303,15 @@ document.getElementById('run-btn').addEventListener('click', async () => {
                         if (elseBlock) await executeBlock(elseBlock);
                     }
                 }
+                else if (block.type === 'cmd_loop') {
+                    let count = Number(block.getFieldValue('COUNT'));
+                    let doBlock = block.getInputTargetBlock('DO');
+                    for (let i = 0; i < count; i++) {
+                        if (!isSimulating) break;
+                        window.workspace.highlightBlock(block.id);
+                        if (doBlock) await executeBlock(doBlock);
+                    }
+                }
                 block = block.getNextBlock();
             }
         }
@@ -271,10 +326,4 @@ document.getElementById('run-btn').addEventListener('click', async () => {
     }
 });
 
-// 親画面(index.html)のSTEP10タブへ移動する (STEP3の時点で既に表示されている)
-window.goToStep10 = function() {
-    if (window.parent && window.parent.document) {
-        const step10Tab = window.parent.document.getElementById('tab-step10');
-        if (step10Tab) step10Tab.click();
-    }
-};
+// STEP11が最後のステップなので、次のステップへのリンクは無い。

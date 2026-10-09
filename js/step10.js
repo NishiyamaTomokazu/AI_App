@@ -1,4 +1,4 @@
-// step9.js (STEP9: 分岐処理)。条件分岐 (もし〜なら)。音声通信 (comm.js) を使う。
+// step10.js (STEP10: 反復処理)。繰り返し (+条件分岐)。音声通信 (comm.js) を使う。
 //   マイコンから FSK で [180または181, 結果(0/1)] が届くと、条件分岐の判定として扱う。
 //     180 = 「もし SW=ON なら」の判定結果 / 181 = 「もし SW=OFF なら」の判定結果
 //   専用のマイクは起動せず、comm が接続時から受信し続けているバイト列をそのまま利用する。
@@ -38,7 +38,7 @@ function waitForCondition(targetCode) {
     });
 }
 
-// 「音が鳴るまで待つ」「スイッチが押されるまで待つ」(STEP9のツールボックスには無いが、互換のため残す)
+// 「音が鳴るまで待つ」「スイッチが押されるまで待つ」(STEP10のツールボックスには無いが、互換のため残す)
 function waitForSensor(targetCode, targetValue) {
     return new Promise((resolve) => {
         const listener = (event) => {
@@ -57,7 +57,7 @@ window.addEventListener('load', () => {
         toolbox: document.getElementById('toolbox'),
         move: { scrollbars: true, drag: true, wheel: true }
     });
-    Blockly.serialization.workspaces.load(defaultBlocksJsonStep7, window.workspace);
+    Blockly.serialization.workspaces.load(defaultBlocksJsonStep8, window.workspace);
     const blocklyDiv = document.getElementById('blocklyDiv');
     const resizeObserver = new ResizeObserver(() => {
         if (window.workspace) Blockly.svgResize(window.workspace);
@@ -151,6 +151,14 @@ document.getElementById('transfer-btn').addEventListener('click', async () => {
                 if (elseBlock) currentAddr = assignAddresses(elseBlock, currentAddr);
                 if (!doBlock) info.trueStart = currentAddr;
                 if (!elseBlock) info.falseStart = currentAddr;
+            } else if (block.type === 'cmd_loop') {
+                info.size = 3;
+                currentAddr += 3;
+                let doBlock = block.getInputTargetBlock('DO');
+                info.bodyStart = currentAddr;
+                if (doBlock) currentAddr = assignAddresses(doBlock, currentAddr);
+                info.loopEndAddr = currentAddr;
+                currentAddr += 2;
             } else if (block.type === 'cmd_led') {
                 info.size = 6; currentAddr += 6;
             } else if (block.type === 'cmd_wait_sound' || block.type === 'cmd_wait_switch') {
@@ -174,6 +182,12 @@ document.getElementById('transfer-btn').addEventListener('click', async () => {
                 if (doBlock) bytes.push(...generateBytes(doBlock, nextAddr));
                 let elseBlock = block.getInputTargetBlock('ELSE');
                 if (elseBlock) bytes.push(...generateBytes(elseBlock, nextAddr));
+            } else if (block.type === 'cmd_loop') {
+                let count = Number(block.getFieldValue('COUNT'));
+                bytes.push(190, count, info.bodyStart);
+                let doBlock = block.getInputTargetBlock('DO');
+                if (doBlock) bytes.push(...generateBytes(doBlock, info.loopEndAddr));
+                bytes.push(191, nextAddr);
             } else if (block.type === 'cmd_led') {
                 const colorName = block.getFieldValue('COLOR');
                 const timeSec = Number(block.getFieldValue('TIME'));
@@ -257,6 +271,15 @@ document.getElementById('run-btn').addEventListener('click', async () => {
                         if (elseBlock) await executeBlock(elseBlock);
                     }
                 }
+                else if (block.type === 'cmd_loop') {
+                    let count = Number(block.getFieldValue('COUNT'));
+                    let doBlock = block.getInputTargetBlock('DO');
+                    for (let i = 0; i < count; i++) {
+                        if (!isSimulating) break;
+                        window.workspace.highlightBlock(block.id);
+                        if (doBlock) await executeBlock(doBlock);
+                    }
+                }
                 block = block.getNextBlock();
             }
         }
@@ -271,10 +294,10 @@ document.getElementById('run-btn').addEventListener('click', async () => {
     }
 });
 
-// 親画面(index.html)のSTEP10タブへ移動する (STEP3の時点で既に表示されている)
-window.goToStep10 = function() {
+// 親画面(index.html)のSTEP11タブへ移動する (STEP3の時点で既に表示されている)
+window.goToStep11 = function() {
     if (window.parent && window.parent.document) {
-        const step10Tab = window.parent.document.getElementById('tab-step10');
-        if (step10Tab) step10Tab.click();
+        const step11Tab = window.parent.document.getElementById('tab-step11');
+        if (step11Tab) step11Tab.click();
     }
 };

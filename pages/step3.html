@@ -39,7 +39,7 @@
     // 親画面(index.html)の、ID付きで隠してあるSTEP4〜STEP9のタブを、まとめて表示してからSTEP4へ移動する
     window.goToStep4 = function() {
         if (window.parent && window.parent.unlockTab) {
-            ['tab-step4', 'tab-step5', 'tab-step6', 'tab-step7', 'tab-step8', 'tab-step9']
+            ['tab-step4', 'tab-step5', 'tab-step6', 'tab-step7', 'tab-step8', 'tab-step9', 'tab-step10', 'tab-step11']
                 .forEach(id => window.parent.unlockTab(id));
         }
         if (window.parent && window.parent.document) {

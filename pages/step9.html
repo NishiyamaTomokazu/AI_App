@@ -10,16 +10,15 @@
 </head>
 <body class="iframe-body">
 
-<!-- CSSにSTEP9専用のスタイルが無いため、元のAI_Clockと同じくSTEP8のクラス名をそのまま使っている -->
-<div class="top-controls step8">
+<div class="top-controls step7">
     <button class="connect-btn" id="connect-btn">🪄 AI クロックに接続</button>
     <span class="connect-hint" id="connect-hint">← まずはここを押そう！</span>
 </div>
 
-<div class="app-container step8">
+<div class="app-container step7">
     <div class="panel-header">
-        <h2>🏆 自由にプログラムを作ってみよう</h2>
-        <p>自由にブロックを組み合わせて、自分だけのプログラムを作ろう！</p>
+        <h2>🔀 条件分岐を使ってみよう</h2>
+        <p>スイッチの状態（ON/OFF）に合わせてプログラムの動きを変えよう！</p>
     </div>
 
     <div class="content-wrapper">
@@ -44,13 +43,13 @@
                 </div>
             </div>
             <div class="end-container"><button class="btn" id="end-btn" disabled>リセット</button></div>
-            <!-- 「現在の変数(送信データ)」の表示は削除。STEP9が最後なので次へのリンクは無し -->
+            <!-- 「現在の変数(送信データ)」の表示は削除。接続状態の下にSTEP8へのリンクを置く -->
             <div class="state-display">
                 [ <span id="device-status">未接続</span> ]
             </div>
-            <div class="state-display" style="margin-top: 8px;">
-                明るさ : <span id="brightness-val">-</span>
-            </div>
+            <p class="outro-text" style="cursor: pointer; font-weight: bold; color: #007bff; text-align: center; margin-top: 10px;" onclick="goToStep10()">
+                STEP10 へ進もう 👉
+            </p>
         </div>
 
         <!-- 右側：プログラミングパネル -->
@@ -64,17 +63,14 @@
             </button>
 
             <xml id="toolbox" style="display: none">
-                <block type="cmd_led">
-                    <field name="COLOR">red</field>
-                    <field name="TIME">1</field>
-                </block>
-                <block type="cmd_wait_switch"></block>
-                <block type="cmd_wait_sound"></block>
-                <block type="cmd_loop"></block>
                 <block type="cmd_if"></block>
                 <block type="cmd_if_else"></block>
                 <block type="cond_switch_on"></block>
                 <block type="cond_switch_off"></block>
+                <block type="cmd_led">
+                    <field name="COLOR">red</field>
+                    <field name="TIME">1</field>
+                </block>
             </xml>
 
             <div id="blocklyDiv" style="height: 450px; width: 100%; border: 2px solid #ccc; border-radius: 8px;"></div>
