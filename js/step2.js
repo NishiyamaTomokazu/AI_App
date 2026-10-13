@@ -71,6 +71,8 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
 });
 
 async function sendStateToDevice() {
+    // ボタンが無効(連打防止のロック中)の間は、信号も送信しない
+    if (isButtonLocked) return;
     try {
         await comm.send([248, 240, appState]);
     } catch (error) {
@@ -180,23 +182,23 @@ function render() {
 
 window.turnOn = function(value) {
     if (isButtonLocked) return;
-    lockButtonsTemporarily();
     if (appState === 8) appState = 0;
     appState |= value;
     render();
+    lockButtonsTemporarily();
 }
 window.turnOff = function(value) {
     if (isButtonLocked) return;
-    lockButtonsTemporarily();
     if (appState === 8) appState = 0;
     appState &= ~value;
     render();
+    lockButtonsTemporarily();
 }
 window.endApp = function() {
     if (isButtonLocked) return;
-    lockButtonsTemporarily();
     appState = 8;
     render();
+    lockButtonsTemporarily();
 }
 
 // 親画面(index.html)の、ID付きで隠してあるSTEP3タブを表示する
