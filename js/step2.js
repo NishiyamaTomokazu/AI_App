@@ -13,6 +13,22 @@ const deviceStatusText = document.getElementById('device-status');
 const gameMessageEl = document.getElementById('game-message');
 const questionNumEl = document.getElementById('question-num');
 
+// ===== ボタン連打防止 =====
+// ボタンをタップした後、この時間(ms)だけ全ボタンの操作を受け付けない。
+// マイコンが連打で誤動作するのを防ぐため。値は後で調整する想定。
+const BUTTON_COOLDOWN_MS = 500;
+let isButtonLocked = false;
+const allButtonIds = ['red-on', 'red-off', 'green-on', 'green-off', 'blue-on', 'blue-off', 'end-btn'];
+
+function lockButtonsTemporarily() {
+    isButtonLocked = true;
+    allButtonIds.forEach(id => { document.getElementById(id).disabled = true; });
+    setTimeout(() => {
+        isButtonLocked = false;
+        allButtonIds.forEach(id => { document.getElementById(id).disabled = false; });
+    }, BUTTON_COOLDOWN_MS);
+}
+
 const colorTasks = { 0:"消灯させて", 1:"赤を点灯させて", 2:"緑を点灯させて", 3:"黄色を点灯させて", 4:"青を点灯させて", 5:"紫を点灯させて", 6:"水色を点灯させて", 7:"白を点灯させて" };
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -162,9 +178,26 @@ function render() {
     sendStateToDevice(); checkGame();
 }
 
-window.turnOn = function(value) { if (appState === 8) appState = 0; appState |= value; render(); }
-window.turnOff = function(value) { if (appState === 8) appState = 0; appState &= ~value; render(); }
-window.endApp = function() { appState = 8; render(); }
+window.turnOn = function(value) {
+    if (isButtonLocked) return;
+    lockButtonsTemporarily();
+    if (appState === 8) appState = 0;
+    appState |= value;
+    render();
+}
+window.turnOff = function(value) {
+    if (isButtonLocked) return;
+    lockButtonsTemporarily();
+    if (appState === 8) appState = 0;
+    appState &= ~value;
+    render();
+}
+window.endApp = function() {
+    if (isButtonLocked) return;
+    lockButtonsTemporarily();
+    appState = 8;
+    render();
+}
 
 // 親画面(index.html)の、ID付きで隠してあるSTEP3タブを表示する
 function unlockStep3Tab() {
