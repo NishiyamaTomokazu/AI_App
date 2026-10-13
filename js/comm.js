@@ -25,7 +25,8 @@ import { FskReceiver } from './fsk-receiver.js';
 
 export const CONFIG = {
   // マイコン → Webアプリ (FSK受信)
-  rx: { baud: 200, freq0: 1200, freq1: 2200, threshold: 0.01 },
+  //rx: { baud: 200, freq0: 1200, freq1: 2200, threshold: 0.01 },
+  rx: { baud: 500, freq0: 1200, freq1: 2200, threshold: 0.01 },
   // Webアプリ → マイコン (音声送信)
   tx: {
     blockGapSamples: 1024, // 1パケット送り終えた直後の無音 (サンプル数。元のAI_Clockと同じ)
