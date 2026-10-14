@@ -89,13 +89,13 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     resetSimulator();
     //STEP7を開いたことをマイコンに通知
-    //console.log("◆AI クロックSTEP7通知コマンド送信: [253, 6]");
+    console.log("◆AI クロックSTEP7通知コマンド送信: [253, 6]");
     comm.send([253, 6]);
 });
 
 //STEP7タブから離れる（他のタブへ切り替わる）ときにマイコンに通知
 window.addEventListener('pagehide', () => {
-    //console.log("◆AI クロックSTEP7離脱通知コマンド送信: [253, 7]");
+    console.log("◆AI クロックSTEP7離脱通知コマンド送信: [253, 7]");
     comm.send([253, 7]);
 });
 async function connectDevice() {
