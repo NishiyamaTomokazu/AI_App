@@ -97,7 +97,7 @@ window.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('pagehide', () => {
     //console.log("◆AI クロックSTEP7離脱通知コマンド送信: [253, 7]");
     comm.send([253, 7]);
-}
+});
 async function connectDevice() {
     const success = await comm.connect();
     if (success) {
