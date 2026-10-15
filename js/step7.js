@@ -89,16 +89,22 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     resetSimulator();
     //STEP7を開いたことをマイコンに通知
-    console.log("◆AI クロックSTEP7通知コマンド送信: [253, 6]");
+    //console.log("◆AI クロックSTEP7通知コマンド送信: [253, 6]");
     comm.send([253, 6]);
 });
 
 //STEP7タブから離れる（他のタブへ切り替わる）ときにマイコンに通知
 window.addEventListener('pagehide', () => {
-    // 明るさデータを1つ受信するまで、実行コマンドの送信を待つ
-    await waitForNextBrightness();
-    //console.log("◆AI クロックSTEP7離脱通知コマンド送信: [253, 7]");
-    comm.send([253, 7]);
+    if (brightnessValue !== null) {
+        // すでに明るさデータを受信済みなら、そのまま送信する
+        console.log("◆STEP7退室コマンド送信: [253, 7]");
+        comm.send([253, 7]);
+    } else {
+        // まだ受信していない場合は、明るさデータ[244, 値]を1つ受信してから送信する。
+        // 待機～送信は comm.js (親画面側) 内で完結するため、このページが破棄された後でも確実に動作する。
+        console.log("◆STEP7退室: 明るさデータの受信を待ってから [253, 7] を送信します");
+        comm.sendAfterByteSequence(244, [253, 7]);
+    }
 });
 async function connectDevice() {
     const success = await comm.connect();

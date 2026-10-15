@@ -253,4 +253,25 @@ class Comm extends EventTarget {
   }
 }
 
+// comm.js に追加
+waitForByteSequence(firstByte) {
+  return new Promise((resolve) => {
+    let buf = [];
+    const listener = (e) => {
+      buf.push(e.detail.value);
+      if (buf.length > 2) buf.shift();
+      if (buf.length === 2 && buf[0] === firstByte) {
+        this.removeEventListener('byte', listener);
+        resolve(buf[1]);
+      }
+    };
+    this.addEventListener('byte', listener);
+  });
+}
+
+async sendAfterByteSequence(firstByte, data) {
+  await this.waitForByteSequence(firstByte);
+  return this.send(data);
+}
+
 export const comm = new Comm();
