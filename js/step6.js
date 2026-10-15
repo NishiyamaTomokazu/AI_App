@@ -86,11 +86,15 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
     if (window.parent) window.parent.commHasClickedConnect = true;
 
     const success = await connectDevice();
+    // if (success) {
+    //     console.log("◆AI クロック接続確認コマンド送信: [253, 5]");
+    //     await comm.send([253, 5]);
+    // } else {
+    //     alert('マイクを使えませんでした。\nマイクの使用を許可してから、もう一度お試しください。');
+    // }
     if (success) {
-        console.log("◆AI クロック接続確認コマンド送信: [253, 5]");
-        await comm.send([253, 5]);
-    } else {
-        alert('マイクを使えませんでした。\nマイクの使用を許可してから、もう一度お試しください。');
+        console.log("◆AI クロックリセットコマンド送信: [253, 8]");
+        await comm.send([253, 8]);
     }
 });
 
