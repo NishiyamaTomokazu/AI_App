@@ -95,7 +95,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 //STEP7タブから離れる（他のタブへ切り替わる）ときにマイコンに通知
 window.addEventListener('pagehide', () => {
-    console.log("◆AI クロックSTEP7離脱通知コマンド送信: [253, 7]");
+    // 明るさデータを1つ受信するまで、実行コマンドの送信を待つ
+    await waitForNextBrightness();
+    //console.log("◆AI クロックSTEP7離脱通知コマンド送信: [253, 7]");
     comm.send([253, 7]);
 });
 async function connectDevice() {
