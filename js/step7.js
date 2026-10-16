@@ -78,7 +78,7 @@ window.addEventListener('load', () => {
     resizeObserver.observe(blocklyDiv);
 });
 
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', () => {
     if (window.parent && window.parent.commHasClickedConnect) {
         const hint = document.getElementById('connect-hint');
         if (hint) hint.style.display = 'none';
@@ -90,16 +90,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     resetSimulator();
     //STEP7を開いたことをマイコンに通知
     //console.log("◆AI クロックSTEP7通知コマンド送信: [253, 6]");
-    await waitForNextBrightness();
+    //await waitForNextBrightness();
     comm.send([253, 6]);
 });
 
 //STEP7タブから離れる（他のタブへ切り替わる）ときにマイコンに通知
-window.addEventListener('pagehide', async () => {
+window.addEventListener('pagehide', () => {
     if (brightnessValue !== null) {
         // すでに明るさデータを受信済みなら、そのまま送信する
         console.log("◆STEP7退室コマンド送信: [253, 7]");
-        await waitForNextBrightness();
+        //await waitForNextBrightness();
         comm.send([253, 7]);
     } else {
         // まだ受信していない場合は、明るさデータ[244, 値]を1つ受信してから送信する。
