@@ -78,7 +78,7 @@ window.addEventListener('load', () => {
     resizeObserver.observe(blocklyDiv);
 });
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     if (window.parent && window.parent.commHasClickedConnect) {
         const hint = document.getElementById('connect-hint');
         if (hint) hint.style.display = 'none';
@@ -95,7 +95,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 //STEP7タブから離れる（他のタブへ切り替わる）ときにマイコンに通知
-window.addEventListener('pagehide', () => {
+window.addEventListener('pagehide', async () => {
     if (brightnessValue !== null) {
         // すでに明るさデータを受信済みなら、そのまま送信する
         console.log("◆STEP7退室コマンド送信: [253, 7]");
