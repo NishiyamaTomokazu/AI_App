@@ -226,7 +226,7 @@ document.getElementById('transfer-btn').addEventListener('click', async () => {
     } else {
         alert("転送するブロックが繋がっていません！");
     }
-    comm.send([253, 6]);
+    //comm.send([253, 6]);
 });
 
 // ---- プログラム実行 ----
@@ -276,7 +276,7 @@ document.getElementById('run-btn').addEventListener('click', async () => {
         console.error('プログラム実行中にエラー:', err);
     } finally {
         isSimulating = false;
-        comm.send([253, 6]);    //センサ値再開
+        //comm.send([253, 6]);    //センサ値再開
         resetSimulator();
     }
 });
