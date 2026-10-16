@@ -215,6 +215,7 @@ document.getElementById('transfer-btn').addEventListener('click', async () => {
     if (payloadBytes.length > 0) {
         // 明るさデータを1つ受信するまで、転送の開始を待つ
         await waitForNextBrightness();
+        await wait(2000);
         let programBytes = [230, 2, ...payloadBytes, 231, 250];
         try {
             await comm.send(programBytes);
