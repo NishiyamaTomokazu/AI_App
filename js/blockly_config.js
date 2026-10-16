@@ -312,3 +312,54 @@ const defaultBlocksJsonStep7Light = {
         ]
     }
 };
+
+// ==========================================
+// STEP8 用の新しいブロック定義 (タイマー)
+//   動作停止[T]秒 (160, T, 次のアドレス) / 動作停止[T]秒 or 音センサ (161, T, 次のアドレス)
+//   T は 1〜255、初期値は 1
+// ==========================================
+Blockly.defineBlocksWithJsonArray([
+    {
+        "type": "cmd_wait_timer",
+        "message0": "動作停止 %1 秒",
+        "args0": [
+            { "type": "field_number", "name": "T", "value": 1, "min": 1, "max": 255, "precision": 1 }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "指定した時間(秒)だけプログラムを一時停止します。"
+    },
+    {
+        "type": "cmd_wait_timer_or_sound",
+        "message0": "動作停止 %1 秒 or 音センサ",
+        "args0": [
+            { "type": "field_number", "name": "T", "value": 1, "min": 1, "max": 255, "precision": 1 }
+        ],
+        "previousStatement": null,
+        "nextStatement": null,
+        "colour": 210,
+        "tooltip": "指定した時間(秒)が経過するか、音センサが検知するまでプログラムを一時停止します。"
+    }
+]);
+
+// ==========================================
+// 初期配置するブロックのデータ (STEP8用)
+//   「プログラムスタート」->「動作停止[3]秒」->「赤LED1秒点灯」
+// ==========================================
+const defaultBlocksJsonStep8Timer = {
+    "blocks": {
+        "blocks": [
+            {
+                "type": "cmd_start", "x": 20, "y": 20, "deletable": false, "movable": false,
+                "next": {
+                    "block": {
+                        "type": "cmd_wait_timer",
+                        "fields": { "T": 3 },
+                        "next": { "block": { "type": "cmd_led", "fields": { "COLOR": "red", "TIME": 1 } } }
+                    }
+                }
+            }
+        ]
+    }
+};
