@@ -216,7 +216,7 @@ document.getElementById('transfer-btn').addEventListener('click', async () => {
 
     if (payloadBytes.length > 0) {
         // 明るさデータを1つ受信するまで、転送の開始を待つ
-        await waitForNextBrightness();
+        //await waitForNextBrightness();
         //comm.send([253, 7]);
         //await wait(10);
         let programBytes = [230, 2, ...payloadBytes, 231, 250];
@@ -238,7 +238,7 @@ document.getElementById('run-btn').addEventListener('click', async () => {
     if (!startBlock) return;
 
     // 明るさデータを1つ受信するまで、実行コマンドの送信を待つ
-    await waitForNextBrightness();
+    //await waitForNextBrightness();
 
     console.log("◆実行コマンド送信: [253, 2]");
     comm.send([253, 2]);
