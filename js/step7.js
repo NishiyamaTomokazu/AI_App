@@ -90,6 +90,7 @@ window.addEventListener('DOMContentLoaded', () => {
     resetSimulator();
     //STEP7を開いたことをマイコンに通知
     //console.log("◆AI クロックSTEP7通知コマンド送信: [253, 6]");
+    waitForNextBrightness();
     comm.send([253, 6]);
 });
 
@@ -98,6 +99,7 @@ window.addEventListener('pagehide', () => {
     if (brightnessValue !== null) {
         // すでに明るさデータを受信済みなら、そのまま送信する
         console.log("◆STEP7退室コマンド送信: [253, 7]");
+        waitForNextBrightness();
         comm.send([253, 7]);
     } else {
         // まだ受信していない場合は、明るさデータ[244, 値]を1つ受信してから送信する。
